@@ -53,6 +53,7 @@ configure_me = { workspace = true }
 dashmap = "5.4.0"
 datafusion = { workspace = true }
 datafusion-proto = { workspace = true }
+deltalake = { version = "0.16.0", features = ["azure", "datafusion"] }
 etcd-client = { version = "0.11", optional = true }
 flatbuffers = { version = "23.5.26" }
 futures = "0.3"

@@ -46,6 +46,7 @@ use datafusion::physical_plan::{metrics, ExecutionPlan, RecordBatchStream};
 use datafusion_proto::logical_plan::{
     AsLogicalPlan, DefaultLogicalExtensionCodec, LogicalExtensionCodec,
 };
+use deltalake::delta_datafusion::DeltaLogicalCodec;
 use futures::StreamExt;
 use log::error;
 use std::io::{BufWriter, Write};
@@ -239,7 +240,11 @@ pub fn create_df_ctx_with_ballista_query_planner<T: 'static + AsLogicalPlan>(
     config: &BallistaConfig,
 ) -> SessionContext {
     let planner: Arc<BallistaQueryPlanner<T>> =
-        Arc::new(BallistaQueryPlanner::new(scheduler_url, config.clone()));
+        Arc::new(BallistaQueryPlanner::with_extension(
+            scheduler_url,
+            config.clone(),
+            Arc::new(DeltaLogicalCodec {}),
+        ));
 
     let session_config = SessionConfig::new()
         .with_target_partitions(config.default_shuffle_partitions())

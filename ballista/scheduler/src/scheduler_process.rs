@@ -18,6 +18,7 @@
 use anyhow::{Context, Result};
 #[cfg(feature = "flight-sql")]
 use arrow_flight::flight_service_server::FlightServiceServer;
+use deltalake::delta_datafusion::DeltaLogicalCodec;
 use futures::future::{self, Either, TryFutureExt};
 use hyper::{server::conn::AddrStream, service::make_service_fn, Server};
 use log::info;
@@ -30,7 +31,7 @@ use tower::Service;
 use datafusion_proto::protobuf::{LogicalPlanNode, PhysicalPlanNode};
 
 use ballista_core::serde::protobuf::scheduler_grpc_server::SchedulerGrpcServer;
-use ballista_core::serde::BallistaCodec;
+use ballista_core::serde::{BallistaCodec, BallistaPhysicalExtensionCodec};
 use ballista_core::utils::create_grpc_server;
 use ballista_core::BALLISTA_VERSION;
 
@@ -63,7 +64,10 @@ pub async fn start_server(
         SchedulerServer::new(
             config.scheduler_name(),
             cluster,
-            BallistaCodec::default(),
+            BallistaCodec::new(
+                Arc::new(DeltaLogicalCodec {}),
+                Arc::new(BallistaPhysicalExtensionCodec {}),
+            ),
             config,
             metrics_collector,
         );
